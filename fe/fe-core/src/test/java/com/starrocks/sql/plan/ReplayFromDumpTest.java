@@ -800,7 +800,6 @@ public class ReplayFromDumpTest extends ReplayFromDumpTestBase {
     }
 
     @Test
-<<<<<<< HEAD
     public void testMvOnView() throws Exception {
         String dumpInfo = getDumpInfoFromFile("query_dump/mv_on_view");
         QueryDumpInfo queryDumpInfo = getDumpInfoFromJson(dumpInfo);
@@ -855,7 +854,8 @@ public class ReplayFromDumpTest extends ReplayFromDumpTestBase {
                 "  |  \n" +
                 "  24:EXCHANGE"));
     }
-=======
+
+    @Test
     public void testNestedViewWithCTE() throws Exception {
 
         Pair<QueryDumpInfo, String> replayPair =
@@ -870,6 +870,4 @@ public class ReplayFromDumpTest extends ReplayFromDumpTestBase {
                 "  |  group by: 24: mock_038, 15: mock_003, 108: mock_109, 4: mock_005, 2: mock_110, 2133: case\n" +
                 "  |  limit: 100"));
     }
-
->>>>>>> 504b4bf1da ([BugFix] record cte expressionMapping all the time (#42080))
 }
