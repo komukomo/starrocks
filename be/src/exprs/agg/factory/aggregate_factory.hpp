@@ -385,7 +385,7 @@ AggregateFunctionPtr AggregateFactory::MakeHllRawAggregateFunction() {
 
 template <LogicalType LT>
 AggregateFunctionPtr AggregateFactory::MakeUniqAggregateFunction() {
-    return std::make_shared<UniqAggregateFunction<LT, false>>();
+    return std::make_shared<UniqAggregateFunction<LT>>();
 }
 
 template <LogicalType LT>

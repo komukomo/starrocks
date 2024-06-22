@@ -29,9 +29,9 @@ namespace starrocks {
  * ARGS_TYPE: ALL TYPE
  * SERIALIZED_TYPE: TYPE_VARCHAR
  */
-template <LogicalType LT, bool IsOutputHLL, typename T = RunTimeCppType<LT>>
+template <LogicalType LT, typename T = RunTimeCppType<LT>>
 class UniqAggregateFunction final
-        : public AggregateFunctionBatchHelper<HyperLogLog, UniqAggregateFunction<LT, IsOutputHLL, T>> {
+        : public AggregateFunctionBatchHelper<HyperLogLog, UniqAggregateFunction<LT, T>> {
 public:
     using ColumnType = RunTimeColumnType<LT>;
 
@@ -151,25 +151,14 @@ public:
 
     void finalize_to_column(FunctionContext* ctx __attribute__((unused)), ConstAggDataPtr __restrict state,
                             Column* to) const override {
-        if constexpr (IsOutputHLL) {
-            DCHECK(to->is_object());
-            auto* column = down_cast<HyperLogLogColumn*>(to);
-            auto& hll_value = const_cast<HyperLogLog&>(this->data(state));
-            column->append(std::move(hll_value));
-        } else {
-            DCHECK(to->is_numeric());
+        DCHECK(to->is_numeric());
 
-            auto* column = down_cast<Int64Column*>(to);
-            column->append(this->data(state).estimate_cardinality());
-        }
+        auto* column = down_cast<Int64Column*>(to);
+        column->append(this->data(state).estimate_cardinality());
     }
 
     std::string get_name() const override {
-        if constexpr (IsOutputHLL) {
-            return "hll_raw";
-        } else {
-            return "ndv";
-        }
+        return "uniq";
     }
 };
 

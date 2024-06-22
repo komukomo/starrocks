@@ -315,6 +315,11 @@ TEST_F(AggregateTest, test_count) {
     test_agg_function<DateValue, int64_t>(ctx, func, 22, 22, 44);
 }
 
+TEST_F(AggregateTest, test_uniq) {
+    const AggregateFunction* func = get_aggregate_function("uniq", TYPE_BIGINT, TYPE_BIGINT, false);
+    test_agg_function<int16_t, int64_t>(ctx, func, 1024, 1000, 1024);
+}
+
 TEST_F(AggregateTest, test_sum) {
     const AggregateFunction* func = get_aggregate_function("sum", TYPE_SMALLINT, TYPE_BIGINT, false);
     test_agg_function<int16_t, int64_t>(ctx, func, 524076, 2499500, 3023576);
