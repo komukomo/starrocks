@@ -49,6 +49,7 @@
 #include "exprs/agg/retention.h"
 #include "exprs/agg/stream/retract_maxmin.h"
 #include "exprs/agg/sum.h"
+#include "exprs/agg/uniq.h"
 #include "exprs/agg/variance.h"
 #include "exprs/agg/window.h"
 #include "exprs/agg/window_funnel.h"
@@ -183,6 +184,9 @@ public:
 
     template <LogicalType T>
     static AggregateFunctionPtr MakeHllRawAggregateFunction();
+
+    template <LogicalType T>
+    static AggregateFunctionPtr MakeUniqAggregateFunction();
 
     static AggregateFunctionPtr MakePercentileApproxAggregateFunction();
 
@@ -377,6 +381,11 @@ AggregateFunctionPtr AggregateFactory::MakeHllNdvAggregateFunction() {
 template <LogicalType LT>
 AggregateFunctionPtr AggregateFactory::MakeHllRawAggregateFunction() {
     return std::make_shared<HllNdvAggregateFunction<LT, true>>();
+}
+
+template <LogicalType LT>
+AggregateFunctionPtr AggregateFactory::MakeUniqAggregateFunction() {
+    return std::make_shared<UniqAggregateFunction<LT, false>>();
 }
 
 template <LogicalType LT>
