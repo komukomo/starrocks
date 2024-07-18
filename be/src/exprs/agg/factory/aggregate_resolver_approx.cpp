@@ -20,6 +20,9 @@
 #include "types/hll.h"
 #include "types/logical_type.h"
 
+#include "exprs/agg/uniq.h"
+
+
 namespace starrocks {
 
 struct HLLUnionBuilder {
@@ -39,7 +42,7 @@ struct HLLUnionBuilder {
             resolver->add_aggregate_mapping<lt, TYPE_BIGINT, HyperLogLog>(
                     "approx_count_distinct", false, AggregateFactory::MakeHllNdvAggregateFunction<lt>());
 
-            resolver->add_aggregate_mapping<lt, TYPE_BIGINT, HyperLogLog>(
+            resolver->add_aggregate_mapping<lt, TYPE_BIGINT, AggregateUniqState>(
                     "uniq", false, AggregateFactory::MakeUniqAggregateFunction<lt>());
         }
     }

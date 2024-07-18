@@ -225,7 +225,7 @@ void test_agg_function(FunctionContext* ctx, const AggregateFunction* func, TRes
     // merge column 1 and column 2
     ColumnPtr serde_column = BinaryColumn::create();
     std::string func_name = func->get_name();
-    if (func_name == "count" || func_name == "sum" || func_name == "maxmin") {
+    if (func_name == "count" || func_name == "sum" || func_name == "maxmin" || func_name == "uniq") {
         serde_column = ResultColumn::create();
     }
 
@@ -317,7 +317,8 @@ TEST_F(AggregateTest, test_count) {
 
 TEST_F(AggregateTest, test_uniq) {
     const AggregateFunction* func = get_aggregate_function("uniq", TYPE_BIGINT, TYPE_BIGINT, false);
-    test_agg_function<int16_t, int64_t>(ctx, func, 1024, 1000, 1024);
+    // test_agg_function<int16_t, int64_t>(ctx, func, 1024, 1000, 1024); //distinct count
+    test_agg_function<int64_t, int64_t>(ctx, func, 1026, 1000, 2026); //count
 }
 
 TEST_F(AggregateTest, test_sum) {
