@@ -45,28 +45,35 @@ public:
 
     void update(FunctionContext* ctx, const Column** columns, AggDataPtr __restrict state,
                 size_t row_num) const override {
-        this->data(state).count++;
+        const auto& column = down_cast<const Int64Column&>(*columns[0]);
+        this->data(state).count += column.get_data()[row_num];
     }
 
     AggStateTableKind agg_state_table_kind(bool is_append_only) const override { return AggStateTableKind::RESULT; }
 
     void retract(FunctionContext* ctx, const Column** columns, AggDataPtr __restrict state,
                  size_t row_num) const override {
-        --this->data(state).count;
+        const auto& column = down_cast<const Int64Column&>(*columns[0]);
+        this->data(state).count -= column.get_data()[row_num];
     }
 
     void update_batch_single_state(FunctionContext* ctx, size_t chunk_size, const Column** columns,
                                    AggDataPtr __restrict state) const override {
-        this->data(state).count += chunk_size;
+        const auto* column = down_cast<const Int64Column*>(columns[0]);
+        const auto* data = column->get_data().data();
+        for (size_t i = 0; i < chunk_size; ++i) {
+            this->data(state).count += data[i];
+        }
     }
 
     void update_batch_single_state_with_frame(FunctionContext* ctx, AggDataPtr __restrict state, const Column** columns,
                                               int64_t peer_group_start, int64_t peer_group_end, int64_t frame_start,
                                               int64_t frame_end) const override {
-        if (frame_start >= frame_end) {
-            return;
+        const auto* column = down_cast<const Int64Column*>(columns[0]);
+        const auto* data = column->get_data().data();
+        for (size_t i = frame_start; i < frame_end; ++i) {
+            this->data(state).count += data[i];
         }
-        this->data(state).count += (frame_end - frame_start);
     }
 
     void merge(FunctionContext* ctx, const Column* column, AggDataPtr __restrict state, size_t row_num) const override {
