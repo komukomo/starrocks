@@ -225,7 +225,7 @@ void test_agg_function(FunctionContext* ctx, const AggregateFunction* func, TRes
     // merge column 1 and column 2
     ColumnPtr serde_column = BinaryColumn::create();
     std::string func_name = func->get_name();
-    if (func_name == "count" || func_name == "sum" || func_name == "maxmin" || func_name == "uniq") {
+    if (func_name == "count" || func_name == "sum" || func_name == "maxmin") {
         serde_column = ResultColumn::create();
     }
 
