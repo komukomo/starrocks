@@ -24,8 +24,88 @@
 
 namespace starrocks {
 
+
+class Bitset {
+    typedef unsigned long block_type;
+    constexpr static size_t block_size = 64; // 64 bits per unsigned long
+    constexpr static size_t block_size_bytes = 8; // 8 bytes per unsigned long
+    std::vector<block_type> bitset;
+
+public:
+    Bitset() = default;
+    Bitset(uint8_t* src) {
+        deserialize(src);
+    }
+
+    void set(uint32_t index) {
+        if (bitset.size() <= index / block_size) {
+            bitset.resize(index / block_size + 1);
+        }
+        bitset[index / block_size] |= (1UL << (index % block_size));
+    }
+    size_t num_blocks() const {
+        return bitset.size();
+    }
+
+    void or_with(const Bitset& other) {
+        if (bitset.size() < other.bitset.size()) {
+            bitset.resize(other.bitset.size());
+        }
+        for (size_t i = 0; i < other.bitset.size(); ++i) {
+            bitset[i] |= other.bitset[i];
+        }
+    }
+
+    size_t count() const {
+        size_t count = 0;
+        for (size_t i = 0; i < bitset.size(); ++i) {
+            count += __builtin_popcountl(bitset[i]);
+        }
+        return count;
+    }
+
+    void clear() {
+        bitset.clear();
+    };
+
+    size_t serialize(uint8_t* dst) const {
+        size_t num_bytes = serialized_size();
+        *reinterpret_cast<size_t*>(dst) = num_blocks();
+        dst += sizeof(size_t);
+        std::copy(bitset.begin(), bitset.end(), reinterpret_cast<block_type*>(dst));
+        return num_bytes;
+    }
+    
+    size_t serialized_size() const {
+        return bitset.size() * sizeof(block_type) + sizeof(size_t);
+    }
+    
+    void deserialize(const uint8_t* src) {
+        size_t num_blocks = *reinterpret_cast<const size_t*>(src);
+        bitset.reserve(num_blocks);
+        src += sizeof(size_t);
+        std::copy(reinterpret_cast<const block_type*>(src), reinterpret_cast<const block_type*>(src + num_blocks * sizeof(block_type)), std::back_inserter(bitset));
+    }
+    
+    
+
+    void print() {
+        for (size_t i = 0; i < bitset.size(); ++i) {
+            for (size_t j = 0; j < block_size; ++j) {
+                if (bitset[i] & (1UL << j)) {
+                    std::cout << "1";
+                } else {
+                    std::cout << "0";
+                }
+            }
+        }
+        std::cout << std::endl;
+    }
+};
+
+
 class AggregateUniqState {
-    int64_t count = 0;
+    Bitset bitset;
 
     public:
     AggregateUniqState() = default;
@@ -35,35 +115,37 @@ class AggregateUniqState {
     }
 
     void merge(const AggregateUniqState& other) {
-        count += other.count;
+        bitset.or_with(other.bitset);
     }
 
-    void update(uint64_t value) {
-        count += value;
+    void update(uint64_t index) {
+        bitset.set(index);
     }
 
     size_t serialize(uint8_t* dst) const {
-        *reinterpret_cast<int64_t*>(dst) = count;
-        return sizeof(int64_t);
+        return bitset.serialize(dst);
     }
 
     bool deserialize(const Slice& slize) {
-        count = *reinterpret_cast<const int64_t*>(slize.data);
+        bitset.deserialize((uint8_t*)slize.data);
         return true;
     }
 
     size_t serialized_size() const {
-        return sizeof(int64_t);
+        return bitset.serialized_size();
     }
 
     int64_t get_value() const {
-        return count;
+        return bitset.count();
     }
 
     void clear() {
-        count = 0;
+        bitset.clear();
     }
 };
+
+
+
 
 /**
  * RETURN_TYPE: TYPE_BIGINT

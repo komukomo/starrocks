@@ -317,9 +317,9 @@ TEST_F(AggregateTest, test_count) {
 
 TEST_F(AggregateTest, test_uniq) {
     const AggregateFunction* func = get_aggregate_function("uniq", TYPE_BIGINT, TYPE_BIGINT, false);
-    // test_agg_function<int16_t, int64_t>(ctx, func, 1024, 1000, 1024); //distinct count
+    test_agg_function<int64_t, int64_t>(ctx, func, 1024, 1000, 2024); //distinct count
     // test_agg_function<int64_t, int64_t>(ctx, func, 1026, 1000, 2026); //count
-    test_agg_function<int64_t, int64_t>(ctx, func, 524076, 2499500, 3023576); // sum
+    // test_agg_function<int64_t, int64_t>(ctx, func, 524076, 2499500, 3023576); // sum
 }
 
 TEST_F(AggregateTest, test_sum) {
